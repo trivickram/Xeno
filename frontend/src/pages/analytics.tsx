@@ -7,13 +7,22 @@ import CustomersChart from '../components/CustomersChart';
 import apiClient from '../utils/api';
 import { BarChart3, TrendingUp, Users, ShoppingCart, DollarSign, Calendar } from 'lucide-react';
 
+interface ApiResponseData {
+  totalRevenue: number;
+  totalOrders: number;
+  totalCustomers: number;
+  revenueData: Array<{ date: string; revenue: number; orders: number }>;
+  customerData: Array<{ date: string; newCustomers: number; returningCustomers: number }>;
+  topProducts: Array<{ name: string; revenue: number; quantity: number }>;
+}
+
 interface AnalyticsData {
   totalRevenue: number;
   totalOrders: number;
   totalCustomers: number;
   conversionRate: number;
   revenueData: Array<{ date: string; revenue: number; orders: number }>;
-  customerData: Array<{ date: string; newCustomers: number; returningCustomers: number }>;
+  customerData: Array<{ date: string; newCustomers: number; returningCustomers: number; totalCustomers: number }>;
   topProducts: Array<{ name: string; revenue: number; quantity: number }>;
   salesByChannel: Array<{ channel: string; sales: number; percentage: number }>;
 }
@@ -45,18 +54,27 @@ const AnalyticsPage: React.FC = () => {
       const response = await apiClient.get(`/dashboard/metrics?days=${dateRange}`);
 
       if (response.success && response.data) {
+        // Cast response data to proper type
+        const data = response.data as ApiResponseData;
+        
+        // Transform customer data to include totalCustomers
+        const customerData = data.customerData?.map((item) => ({
+          ...item,
+          totalCustomers: (item.newCustomers || 0) + (item.returningCustomers || 0)
+        })) || [];
+
         setAnalytics({
-          totalRevenue: response.data.totalRevenue,
-          totalOrders: response.data.totalOrders,
-          totalCustomers: response.data.totalCustomers,
+          totalRevenue: data.totalRevenue || 0,
+          totalOrders: data.totalOrders || 0,
+          totalCustomers: data.totalCustomers || 0,
           conversionRate: 3.4, // Sample conversion rate
-          revenueData: response.data.revenueData,
-          customerData: response.data.customerData,
-          topProducts: response.data.topProducts,
+          revenueData: data.revenueData || [],
+          customerData,
+          topProducts: data.topProducts || [],
           salesByChannel: [
-            { channel: 'Online Store', sales: response.data.totalRevenue * 0.7, percentage: 70 },
-            { channel: 'POS', sales: response.data.totalRevenue * 0.2, percentage: 20 },
-            { channel: 'Mobile App', sales: response.data.totalRevenue * 0.1, percentage: 10 }
+            { channel: 'Online Store', sales: (data.totalRevenue || 0) * 0.7, percentage: 70 },
+            { channel: 'POS', sales: (data.totalRevenue || 0) * 0.2, percentage: 20 },
+            { channel: 'Mobile App', sales: (data.totalRevenue || 0) * 0.1, percentage: 10 }
           ]
         });
       } else {
@@ -109,10 +127,12 @@ const AnalyticsPage: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4 text-gray-500" />
-              <select 
-                value={dateRange} 
+              <select
+                value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                title="Select date range"
+                aria-label="Select date range"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -221,8 +241,10 @@ const AnalyticsPage: React.FC = () => {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
-                          className="bg-blue-600 h-2 rounded-full" 
-                          style={{ width: `${channel.percentage}%` }}
+                          className={`bg-blue-600 h-2 rounded-full ${
+                            channel.percentage >= 70 ? 'w-[70%]' :
+                            channel.percentage >= 20 ? 'w-[20%]' : 'w-[10%]'
+                          }`}
                         ></div>
                       </div>
                     </div>
