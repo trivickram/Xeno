@@ -39,7 +39,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await apiClient.verifyToken();
       if (response.success && response.data?.user) {
         setUser(response.data.user);
-        setTenant(response.data.user.tenant);
+        setTenant(response.data.user.tenant || null);
       } else {
         apiClient.clearAuth();
       }
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const { user, token } = response.data;
         apiClient.setAuthToken(token);
         setUser(user);
-        setTenant(user.tenant);
+        setTenant(user.tenant || null);
         
         toast.success('Login successful!');
         router.push('/dashboard');
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const { user, tenant, token } = response.data;
         apiClient.setAuthToken(token);
         setUser(user);
-        setTenant(tenant);
+        setTenant(tenant || user.tenant || null);
         
         toast.success('Registration successful!');
         router.push('/dashboard');

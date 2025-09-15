@@ -5,7 +5,7 @@
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import Cookies from 'js-cookie';
-import { ApiResponse, ApiError } from '../types';
+import { ApiResponse, ApiError, VerifyTokenResponse, AuthResponse } from '../types';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -103,7 +103,7 @@ class ApiClient {
   }
 
   // Authentication API methods
-  async login(email: string, password: string) {
+  async login(email: string, password: string): Promise<ApiResponse<AuthResponse>> {
     return this.post('/auth/login', { email, password });
   }
 
@@ -117,7 +117,7 @@ class ApiClient {
     phone?: string;
     website?: string;
     industry?: string;
-  }) {
+  }): Promise<ApiResponse<AuthResponse>> {
     return this.post('/auth/register', data);
   }
 
@@ -141,7 +141,7 @@ class ApiClient {
     return this.post('/auth/change-password', { currentPassword, newPassword });
   }
 
-  async verifyToken() {
+  async verifyToken(): Promise<ApiResponse<VerifyTokenResponse>> {
     return this.get('/auth/verify-token');
   }
 

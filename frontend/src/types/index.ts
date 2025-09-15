@@ -50,6 +50,16 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface AuthResponse {
+  user: User;
+  token: string;
+  tenant?: Tenant;
+}
+
+export interface VerifyTokenResponse {
+  user: User;
+}
+
 export interface RegisterData {
   firstName: string;
   lastName: string;
