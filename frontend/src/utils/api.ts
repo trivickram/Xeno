@@ -5,7 +5,7 @@
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import Cookies from 'js-cookie';
-import { ApiResponse, ApiError, VerifyTokenResponse, AuthResponse } from '../types';
+import { ApiResponse, ApiError, VerifyTokenResponse, AuthResponse, User } from '../types';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -133,7 +133,7 @@ class ApiClient {
     return this.get('/auth/profile');
   }
 
-  async updateProfile(data: any) {
+  async updateProfile(data: Partial<User>): Promise<ApiResponse<User>> {
     return this.put('/auth/profile', data);
   }
 
